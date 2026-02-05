@@ -11,10 +11,10 @@ interface EvenementFormProps {
   onSave?: (event: Evenement) => void;
 }
 
-// Convertit datetime-local en ISO UTC
-function localDateTimeToUTC(input: string | undefined): string {
+// Convertit datetime-local ou Date en ISO UTC
+function localDateTimeToUTC(input: string | Date | undefined): string {
   if (!input) return '';
-  const d = new Date(input);
+  const d = typeof input === 'string' ? new Date(input) : input;
   return isNaN(d.getTime()) ? '' : d.toISOString();
 }
 
@@ -31,7 +31,13 @@ function formatDateToInputValue(date: string | Date | undefined): string {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
-export default function EvenementForm({ start, end, medecinId, existingEvent, onSave }: EvenementFormProps) {
+export default function EvenementForm({
+  start,
+  end,
+  medecinId,
+  existingEvent,
+  onSave,
+}: EvenementFormProps) {
   const [title, setTitle] = useState('');
   const [type, setType] = useState('Consultation');
   const [visibilite, setVisibilite] = useState('Médecin seulement');
@@ -75,14 +81,14 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
         visibilite,
         notification,
         notificationTime: typeof notificationTime === 'number' ? notificationTime : 0,
-        medecinId, 
+        medecinId, // ici medecinId est toujours string
       },
     };
 
     setLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {
-      setError("Utilisateur non authentifié");
+      setError('Utilisateur non authentifié');
       setLoading(false);
       return;
     }
@@ -90,12 +96,12 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
     try {
       const url = existingEvent
         ? `http://localhost:8000/api/evenements/${existingEvent.id}`
-        : "http://localhost:8000/api/evenements";
+        : 'http://localhost:8000/api/evenements';
 
       const response = await fetch(url, {
-        method: existingEvent ? "PUT" : "POST",
+        method: existingEvent ? 'PUT' : 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(newEvent),
@@ -103,14 +109,13 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || "Erreur lors de l’enregistrement");
+        throw new Error(err.message || 'Erreur lors de l’enregistrement');
       }
 
       const savedEvent = await response.json();
       if (onSave) onSave(savedEvent.evenement || savedEvent);
 
       if (!existingEvent) {
-        // Réinitialiser le formulaire pour un nouvel ajout
         setTitle('');
         setType('Consultation');
         setVisibilite('Médecin seulement');
@@ -127,7 +132,10 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 border dark:border-gray-700 p-4 mt-4 rounded shadow space-y-3">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white dark:bg-gray-900 border dark:border-gray-700 p-4 mt-4 rounded shadow space-y-3"
+    >
       <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
         {existingEvent ? 'Modifier l’événement' : 'Nouvel événement'}
       </h2>
@@ -143,7 +151,9 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Début</label>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Début
+          </label>
           <input
             type="datetime-local"
             value={startTime}
@@ -153,7 +163,9 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
           />
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Fin</label>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Fin
+          </label>
           <input
             type="datetime-local"
             value={endTime}
@@ -164,14 +176,22 @@ export default function EvenementForm({ start, end, medecinId, existingEvent, on
         </div>
       </div>
 
-      <select value={type} onChange={(e) => setType(e.target.value)} className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value)}
+        className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      >
         <option>Consultation</option>
         <option>Chirurgie</option>
         <option>Réunion</option>
         <option>Pause</option>
       </select>
 
-      <select value={visibilite} onChange={(e) => setVisibilite(e.target.value)} className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      <select
+        value={visibilite}
+        onChange={(e) => setVisibilite(e.target.value)}
+        className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      >
         <option>Médecin seulement</option>
         <option>Interne</option>
         <option>Publique</option>
