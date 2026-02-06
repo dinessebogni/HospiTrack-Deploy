@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from "next/navigation";
-import { Evenement } from '../../hooks/useEvenements';
-import PlanningJournee from '../Doctor/PlanningJour';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import PlanningJournee from '../Doctor/PlanningJour';
+
+import { Evenement } from '../../hooks/useEvenements';
 
 interface Medecin {
   _id: string;
@@ -13,19 +14,20 @@ interface Medecin {
 }
 
 interface SidebarProps {
-  evenements: Evenement[];
+  evenements?: Evenement[];
 }
 
-export default function SidebarMedecin({ evenements }: SidebarProps) {
+export default function SidebarMedecin({ evenements = [] }: SidebarProps) {
   const router = useRouter();
   const [medecin, setMedecin] = useState<Medecin | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const fetchMedecin = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const medecinId = localStorage.getItem("medecinId"); 
-        console.log("Récupération medecinId depuis localStorage:", medecinId);
+        const token = localStorage.getItem('token');
+        const medecinId = localStorage.getItem('medecinId'); 
         if (!token || !medecinId) return;
 
         const res = await fetch(`http://localhost:8000/api/medecins/${medecinId}`, {
@@ -39,6 +41,7 @@ useEffect(() => {
         console.error(err);
       }
     };
+
     fetchMedecin();
   }, []);
 
@@ -66,12 +69,12 @@ useEffect(() => {
 
       {/* Planning du jour */}
       <div>
-       <PlanningJournee medecinId={medecin._id} />
+        <PlanningJournee medecinId={medecin._id} evenements={evenements} />
 
         {/* Bouton redirection vers agenda avec medecin._id */}
         <button
-          onClick={() => router.push(`/Doctor/agenda?medecinId=${medecin._id}`)}
-          className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+          onClick={() => router.push(`/Doctor/agenda/${medecin._id}`)}
+          className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
         >
           Ajouter un événement
         </button>
