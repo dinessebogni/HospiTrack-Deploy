@@ -7,6 +7,7 @@ import { fr } from 'date-fns/locale';
 
 interface PlanningJourneeProps {
   medecinId: string;
+  evenements?: Evenement[]; // <- optionnel : permet de passer des événements déjà récupérés
 }
 
 interface EventWithDate extends Omit<Evenement, 'start' | 'end'> {
@@ -15,11 +16,33 @@ interface EventWithDate extends Omit<Evenement, 'start' | 'end'> {
   extendedProps: Evenement['extendedProps'] & { medecinId: string };
 }
 
-export default function PlanningJournee({ medecinId }: PlanningJourneeProps) {
+export default function PlanningJournee({ medecinId, evenements: initialEvenements }: PlanningJourneeProps) {
   const [evenements, setEvenements] = useState<EventWithDate[]>([]);
   const today = new Date();
 
   useEffect(() => {
+    if (initialEvenements && initialEvenements.length > 0) {
+      // Si on reçoit déjà des événements depuis les props (Dashboard)
+      const eventsFormatted: EventWithDate[] = initialEvenements
+        .map((e) => ({
+          ...e,
+          start: typeof e.start === 'string' ? parseISO(e.start) : e.start,
+          end: typeof e.end === 'string' ? parseISO(e.end) : e.end,
+          extendedProps: e.extendedProps as EventWithDate['extendedProps'],
+        }))
+        .filter(
+          (e): e is EventWithDate =>
+            e.start instanceof Date &&
+            e.end instanceof Date &&
+            isSameDay(e.start, today)
+        );
+
+      eventsFormatted.sort((a, b) => a.start.getTime() - b.start.getTime());
+      setEvenements(eventsFormatted);
+      return;
+    }
+
+    // Sinon, fetch depuis l'API
     const fetchEvenements = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -30,9 +53,7 @@ export default function PlanningJournee({ medecinId }: PlanningJourneeProps) {
         if (!res.ok) throw new Error('Impossible de récupérer les événements');
 
         const data: Evenement[] = await res.json();
-        console.log("Événements récupérés pour le jour :", data);
 
-        // Convertir les dates et filtrer par jour courant
         const eventsFormatted: EventWithDate[] = data
           .map((e) => ({
             ...e,
@@ -44,12 +65,10 @@ export default function PlanningJournee({ medecinId }: PlanningJourneeProps) {
             (e): e is EventWithDate =>
               e.start instanceof Date &&
               e.end instanceof Date &&
-              isSameDay(e.start, today) // uniquement les événements du jour
+              isSameDay(e.start, today)
           );
 
-        // Tri par heure de début
         eventsFormatted.sort((a, b) => a.start.getTime() - b.start.getTime());
-
         setEvenements(eventsFormatted);
       } catch (err) {
         console.error(err);
@@ -57,7 +76,7 @@ export default function PlanningJournee({ medecinId }: PlanningJourneeProps) {
     };
 
     fetchEvenements();
-  }, [medecinId]);
+  }, [medecinId, initialEvenements]);
 
   if (evenements.length === 0) {
     return (
@@ -66,12 +85,15 @@ export default function PlanningJournee({ medecinId }: PlanningJourneeProps) {
       </p>
     );
   }
- 
+
   return (
     <div className="mt-6 space-y-3">
       <h2 className="text-xl font-bold mb-2 flex flex-wrap items-center gap-2">
         Planning du jour –
-        <span className="text-green-700 text-opacity-80 truncate max-w-xs inline-block" title={format(today, 'eeee d MMMM yyyy', { locale: fr })}>
+        <span
+          className="text-green-700 text-opacity-80 truncate max-w-xs inline-block"
+          title={format(today, 'eeee d MMMM yyyy', { locale: fr })}
+        >
           {format(today, 'eeee d MMMM yyyy', { locale: fr })}
         </span>
       </h2>
@@ -79,10 +101,7 @@ export default function PlanningJournee({ medecinId }: PlanningJourneeProps) {
       <ul className="space-y-2">
         {evenements.map((event) => (
           <li key={event.id} className="bg-white dark:bg-gray-800 p-3 rounded shadow">
-            <p 
-              className="font-semibold truncate" 
-              title={event.title || 'Sans titre'}
-            >
+            <p className="font-semibold truncate" title={event.title || 'Sans titre'}>
               {event.title || 'Sans titre'}
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
