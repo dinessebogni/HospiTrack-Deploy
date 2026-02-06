@@ -24,7 +24,7 @@ const checkAdmins = require('./api-backend/routes/checkAdmins');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const mongoUri = process.env.MONGO_URL || process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/hospitrack';
+const mongoUri = process.env.MONGO_URL;
 
 // Création serveur HTTP + socket.io
 const httpServer = http.createServer(app);
@@ -87,7 +87,7 @@ app.use('/api', apiRouter);
 
 // Connexion MongoDB puis démarrage serveur
 mongoose
-  .connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(mongoUri)
   .then(async () => {
     console.log('✅ Connecté à MongoDB');
 
