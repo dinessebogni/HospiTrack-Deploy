@@ -19,20 +19,16 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
   const [selectedRange, setSelectedRange] = useState<{ start: string; end: string } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null);
 
-  // Ajouter un événement
   const ajouterEvenement = (e: Evenement) => setEvents((prev) => [...prev, e]);
 
-  // Supprimer un événement par id
   const supprimerEvenement = (id?: string) =>
     setEvents((prev) => prev.filter((ev) => ev.id !== id));
 
-  // Sélection d'une plage horaire
   const handleSelect = (info: any) => {
     setSelectedRange({ start: info.startStr, end: info.endStr });
     setSelectedEvent(null);
   };
 
-  // Clic sur un événement
   const handleEventClick = (info: any) => {
     setSelectedEvent({
       id: info.event.id,
