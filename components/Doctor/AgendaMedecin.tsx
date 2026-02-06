@@ -11,7 +11,7 @@ import EventDetails from '../../components/Doctor/EventDetails';
 import EvenementForm, { Evenement } from '../../components/Doctor/EvenementForm';
 
 interface AgendaMedecinProps {
-  medecinId: string; // Toujours string pour App Router
+  medecinId: string; // Toujours string pour Next.js
 }
 
 export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
@@ -38,7 +38,6 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
     setSelectedRange(null);
   };
 
-  // Conversion string | Date => string pour EvenementForm
   const toISOString = (value?: string | Date): string =>
     !value ? '' : typeof value === 'string' ? new Date(value).toISOString() : value.toISOString();
 

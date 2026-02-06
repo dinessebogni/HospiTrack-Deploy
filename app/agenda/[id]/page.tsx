@@ -1,13 +1,9 @@
 import AgendaMedecin from "../../../components/Doctor/AgendaMedecin";
 
-// Toujours recevoir { params } de Next.js
-interface PageProps {
-  params: { id: string };
-}
-
-export default function Page({ params }: PageProps) {
-  // Force le type string pour éviter toute erreur TS
-  const medecinId = String(params.id);
+// Next.js App Router attend { params }
+export default function Page({ params }: { params: { id: string } }) {
+  // On force en string pour éviter le type number / string
+  const medecinId = params.id;
 
   return <AgendaMedecin medecinId={medecinId} />;
 }
