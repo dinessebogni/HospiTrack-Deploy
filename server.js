@@ -85,7 +85,6 @@ apiRouter.use('/visio', visioRoutes);
 
 app.use('/api', apiRouter);
 
-// Connexion MongoDB puis démarrage serveur
 mongoose
   .connect(mongoUri)
   .then(async () => {
