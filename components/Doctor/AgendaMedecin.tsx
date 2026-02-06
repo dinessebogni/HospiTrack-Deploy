@@ -11,7 +11,7 @@ import EventDetails from '../../components/Doctor/EventDetails';
 import EvenementForm, { Evenement } from '../../components/Doctor/EvenementForm';
 
 interface AgendaMedecinProps {
-  medecinId: string;
+  medecinId: string; // Toujours string pour App Router
 }
 
 export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
@@ -19,9 +19,8 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
   const [selectedRange, setSelectedRange] = useState<{ start: string; end: string } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null);
 
-  const ajouterEvenement = (e: Evenement) => setEvents(prev => [...prev, e]);
-  const supprimerEvenement = (id?: string) =>
-    setEvents(prev => prev.filter(ev => ev.id !== id));
+  const ajouterEvenement = (e: Evenement) => setEvents((prev) => [...prev, e]);
+  const supprimerEvenement = (id?: string) => setEvents((prev) => prev.filter((ev) => ev.id !== id));
 
   const handleSelect = (info: any) => {
     setSelectedRange({ start: info.startStr, end: info.endStr });
@@ -32,12 +31,16 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
     setSelectedEvent({
       id: info.event.id,
       title: info.event.title,
-      start: info.event.start?.toISOString() || '', // Converti en string
-      end: info.event.end?.toISOString() || '',     // Converti en string
+      start: info.event.start?.toISOString() || '',
+      end: info.event.end?.toISOString() || '',
       extendedProps: info.event.extendedProps,
     });
     setSelectedRange(null);
   };
+
+  // Conversion string | Date => string pour EvenementForm
+  const toISOString = (value?: string | Date): string =>
+    !value ? '' : typeof value === 'string' ? new Date(value).toISOString() : value.toISOString();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#evenement') {
@@ -45,12 +48,6 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 200);
     }
   }, []);
-
-  // Fonction utilitaire pour toujours passer des strings
-  const toISOString = (value?: string | Date): string => {
-    if (!value) return '';
-    return typeof value === 'string' ? new Date(value).toISOString() : value.toISOString();
-  };
 
   return (
     <>
@@ -88,20 +85,8 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
 
         <div id="evenement">
           <EvenementForm
-            start={
-              selectedRange?.start
-                ? selectedRange.start
-                : selectedEvent?.start
-                ? toISOString(selectedEvent.start)
-                : ''
-            }
-            end={
-              selectedRange?.end
-                ? selectedRange.end
-                : selectedEvent?.end
-                ? toISOString(selectedEvent.end)
-                : ''
-            }
+            start={selectedRange?.start ?? toISOString(selectedEvent?.start)}
+            end={selectedRange?.end ?? toISOString(selectedEvent?.end)}
             existingEvent={selectedEvent ?? undefined}
             medecinId={medecinId}
             onSave={ajouterEvenement}
