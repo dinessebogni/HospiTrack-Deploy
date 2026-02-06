@@ -85,6 +85,8 @@ apiRouter.use('/visio', visioRoutes);
 
 app.use('/api', apiRouter);
 
+console.log("🔹 process.env.MONGO_URL =", process.env.MONGO_URL);
+
 mongoose
   .connect(mongoUri)
   .then(async () => {
