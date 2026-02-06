@@ -19,38 +19,38 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
   const [selectedRange, setSelectedRange] = useState<{ start: string; end: string } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null);
 
-  // Ajouter un événement
-  const ajouterEvenement = (e: Evenement) => setEvents((prev) => [...prev, e]);
-
-  // Supprimer un événement par id
+  const ajouterEvenement = (e: Evenement) => setEvents(prev => [...prev, e]);
   const supprimerEvenement = (id?: string) =>
-    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+    setEvents(prev => prev.filter(ev => ev.id !== id));
 
-  // Sélection d'une plage horaire
   const handleSelect = (info: any) => {
     setSelectedRange({ start: info.startStr, end: info.endStr });
     setSelectedEvent(null);
   };
 
-  // Clic sur un événement
   const handleEventClick = (info: any) => {
     setSelectedEvent({
       id: info.event.id,
       title: info.event.title,
-      start: info.event.start?.toISOString() || '',
-      end: info.event.end?.toISOString() || '',
+      start: info.event.start?.toISOString() || '', // Converti en string
+      end: info.event.end?.toISOString() || '',     // Converti en string
       extendedProps: info.event.extendedProps,
     });
     setSelectedRange(null);
   };
 
-  // Scroll automatique vers le formulaire si hash #evenement
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#evenement') {
       const el = document.getElementById('evenement');
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 200);
     }
   }, []);
+
+  // Fonction utilitaire pour toujours passer des strings
+  const toISOString = (value?: string | Date): string => {
+    if (!value) return '';
+    return typeof value === 'string' ? new Date(value).toISOString() : value.toISOString();
+  };
 
   return (
     <>
@@ -82,30 +82,28 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
               supprimerEvenement(id);
               setSelectedEvent(null);
             }}
-            onEdit={(event) => {
-              setSelectedEvent(event);
-            }}
+            onEdit={(event) => setSelectedEvent(event)}
           />
         )}
 
         <div id="evenement">
           <EvenementForm
             start={
-              typeof selectedRange?.start === 'string'
+              selectedRange?.start
                 ? selectedRange.start
                 : selectedEvent?.start
-                ? new Date(selectedEvent.start).toISOString()
+                ? toISOString(selectedEvent.start)
                 : ''
             }
             end={
-              typeof selectedRange?.end === 'string'
+              selectedRange?.end
                 ? selectedRange.end
                 : selectedEvent?.end
-                ? new Date(selectedEvent.end).toISOString()
+                ? toISOString(selectedEvent.end)
                 : ''
             }
             existingEvent={selectedEvent ?? undefined}
-            medecinId={String(medecinId)}
+            medecinId={medecinId}
             onSave={ajouterEvenement}
           />
         </div>
