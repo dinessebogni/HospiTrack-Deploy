@@ -11,7 +11,7 @@ import EventDetails from '../../components/Doctor/EventDetails';
 import EvenementForm, { Evenement } from '../../components/Doctor/EvenementForm';
 
 interface AgendaMedecinProps {
-  medecinId: number;
+  medecinId: string;
 }
 
 export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
@@ -82,15 +82,30 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
               supprimerEvenement(id);
               setSelectedEvent(null);
             }}
+            onEdit={(event) => {
+              setSelectedEvent(event);
+            }}
           />
         )}
 
         <div id="evenement">
           <EvenementForm
-            start={selectedRange?.start || selectedEvent?.start || ''}
-            end={selectedRange?.end || selectedEvent?.end || ''}
+            start={
+              typeof selectedRange?.start === 'string'
+                ? selectedRange.start
+                : selectedEvent?.start
+                ? new Date(selectedEvent.start).toISOString()
+                : ''
+            }
+            end={
+              typeof selectedRange?.end === 'string'
+                ? selectedRange.end
+                : selectedEvent?.end
+                ? new Date(selectedEvent.end).toISOString()
+                : ''
+            }
             existingEvent={selectedEvent ?? undefined}
-            medecinId={medecinId}
+            medecinId={String(medecinId)}
             onSave={ajouterEvenement}
           />
         </div>
