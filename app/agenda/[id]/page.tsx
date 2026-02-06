@@ -1,5 +1,11 @@
-import AgendaMedecin from "../../../components/Doctor/AgendaMedecin";
+import AgendaMedecin from '../../../components/Doctor/AgendaMedecin';
 
-export default function Page({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function Page({ params }: PageProps) {
   return <AgendaMedecin medecinId={params.id} />;
 }

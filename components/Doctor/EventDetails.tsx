@@ -1,6 +1,6 @@
-import { Evenement } from "../../hooks/useEvenements";
-import { FiEdit, FiX, FiXCircle } from "react-icons/fi"; // Icônes Feather
-import { MdClose } from "react-icons/md";
+'use client';
+
+import { Evenement } from './EvenementForm';
 
 interface EventDetailsProps {
   event: Evenement;
@@ -11,48 +11,35 @@ interface EventDetailsProps {
 
 export default function EventDetails({ event, onClose, onDelete, onEdit }: EventDetailsProps) {
   return (
-    <div className="absolute top-10 right-10 bg-white dark:bg-gray-900 border dark:border-gray-700 shadow-xl p-4 rounded-lg w-80 z-50 text-gray-800 dark:text-gray-200">
-      <h3 className="text-lg font-bold mb-2">{event.title}</h3>
-
-      <p><strong>Type :</strong> {event.extendedProps?.type}</p>
-      <p><strong>Début :</strong> {event.start ? new Date(event.start).toLocaleString('fr-FR') : '-'}</p>
-      <p><strong>Fin :</strong> {event.end ? new Date(event.end).toLocaleString('fr-FR') : '-'}</p>
-      <p><strong>Visibilité :</strong> {event.extendedProps?.visibilite}</p>
-      <p>
-        <strong>Notification :</strong>{" "}
-        {event.extendedProps?.notification
-          ? `Oui (${event.extendedProps.notificationTime} min avant)`
-          : "Non"}
+    <div className="fixed top-10 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-900 border dark:border-gray-700 p-4 rounded shadow z-50 w-96">
+      <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">{event.title}</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-300">
+        Début : {new Date(event.start).toLocaleString()}
       </p>
-
-      <div className="mt-4 flex justify-between gap-2">
-        {/* Bouton Modifier */}
+      <p className="text-sm text-gray-600 dark:text-gray-300">
+        Fin : {new Date(event.end).toLocaleString()}
+      </p>
+      <p className="text-sm text-gray-600 dark:text-gray-300">
+        Type : {event.extendedProps?.type || 'Consultation'}
+      </p>
+      <div className="flex justify-end space-x-2 mt-4">
         <button
           onClick={() => onEdit(event)}
-          className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
         >
-          <FiEdit size={16} /> Modifier
+          Modifier
         </button>
-
-        {/* Bouton Supprimer */}
         <button
-          onClick={() => {
-            if (confirm("Supprimer cet événement ?") && event.id) {
-              onDelete(event.id);
-              onClose();
-            }
-          }}
-          className="flex items-center gap-1 px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
+          onClick={() => onDelete(event.id)}
+          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
         >
-          <FiX size={16} /> Supprimer
+          Supprimer
         </button>
-
-        {/* Bouton Fermer */}
         <button
           onClick={onClose}
-          className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-black dark:text-white rounded"
+          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
         >
-          <MdClose size={16} /> Fermer
+          Fermer
         </button>
       </div>
     </div>

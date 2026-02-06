@@ -1,7 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Evenement } from '../../hooks/useEvenements';
+
+export interface Evenement {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  extendedProps?: {
+    type?: string;
+    visibilite?: string;
+    notification?: boolean;
+    notificationTime?: number;
+    medecinId?: string;
+    [key: string]: any;
+  };
+}
 
 interface EvenementFormProps {
   start: string;
@@ -11,15 +25,14 @@ interface EvenementFormProps {
   onSave?: (event: Evenement) => void;
 }
 
-// Convertit datetime-local ou Date en ISO UTC
-function localDateTimeToUTC(input: string | Date | undefined): string {
-  if (!input) return '';
-  const d = typeof input === 'string' ? new Date(input) : input;
+// Convertit datetime-local en ISO UTC
+function localDateTimeToUTC(input: string): string {
+  const d = new Date(input);
   return isNaN(d.getTime()) ? '' : d.toISOString();
 }
 
 // Formate ISO ou Date pour input[type=datetime-local]
-function formatDateToInputValue(date: string | Date | undefined): string {
+function formatDateToInputValue(date?: string | Date): string {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
   if (isNaN(d.getTime())) return '';
@@ -48,7 +61,6 @@ export default function EvenementForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialiser le formulaire si existingEvent
   useEffect(() => {
     if (existingEvent) {
       setTitle(existingEvent.title || '');
@@ -65,11 +77,13 @@ export default function EvenementForm({
     e.preventDefault();
     setError(null);
 
-    if (!title || !startTime || !endTime) return setError('Veuillez remplir tous les champs');
+    if (!title || !startTime || !endTime)
+      return setError('Veuillez remplir tous les champs');
 
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
-    if (endDate <= startDate) return setError("L'heure de fin doit être après l'heure de début");
+    if (endDate <= startDate)
+      return setError("L'heure de fin doit être après l'heure de début");
 
     const newEvent: Evenement = {
       id: existingEvent?.id || crypto.randomUUID(),
@@ -81,39 +95,15 @@ export default function EvenementForm({
         visibilite,
         notification,
         notificationTime: typeof notificationTime === 'number' ? notificationTime : 0,
-        medecinId, // ici medecinId est toujours string
+        medecinId,
       },
     };
 
     setLoading(true);
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (!token) {
-      setError('Utilisateur non authentifié');
-      setLoading(false);
-      return;
-    }
 
     try {
-      const url = existingEvent
-        ? `http://localhost:8000/api/evenements/${existingEvent.id}`
-        : 'http://localhost:8000/api/evenements';
-
-      const response = await fetch(url, {
-        method: existingEvent ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newEvent),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || 'Erreur lors de l’enregistrement');
-      }
-
-      const savedEvent = await response.json();
-      if (onSave) onSave(savedEvent.evenement || savedEvent);
+      // Ici, tu peux ajouter la logique d'API pour POST/PUT
+      if (onSave) onSave(newEvent);
 
       if (!existingEvent) {
         setTitle('');
@@ -125,7 +115,7 @@ export default function EvenementForm({
         setEndTime(formatDateToInputValue(end));
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Erreur lors de l’enregistrement');
     } finally {
       setLoading(false);
     }
@@ -198,7 +188,11 @@ export default function EvenementForm({
       </select>
 
       <label className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
-        <input type="checkbox" checked={notification} onChange={(e) => setNotification(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={notification}
+          onChange={(e) => setNotification(e.target.checked)}
+        />
         <span>Activer une notification</span>
       </label>
 
@@ -208,21 +202,29 @@ export default function EvenementForm({
             type="number"
             min={0}
             value={notificationTime ?? ''}
-            onChange={(e) => setNotificationTime(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) =>
+              setNotificationTime(e.target.value === '' ? '' : Number(e.target.value))
+            }
             placeholder="Minutes"
             className="w-24 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
-          <span className="text-sm text-gray-600 dark:text-gray-400">minutes avant l'événement</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            minutes avant l'événement
+          </span>
         </div>
       )}
 
-      {error && <div className="text-black bg-red-300 p-2 text-sm font-medium rounded">{error}</div>}
+      {error && (
+        <div className="text-black bg-red-300 p-2 text-sm font-medium rounded">{error}</div>
+      )}
 
-      <button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+      >
         {loading ? 'Enregistrement...' : existingEvent ? 'Modifier' : 'Ajouter'}
       </button>
     </form>
   );
 }
-
-export type { Evenement };

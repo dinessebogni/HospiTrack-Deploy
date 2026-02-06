@@ -11,7 +11,7 @@ import EventDetails from '../../components/Doctor/EventDetails';
 import EvenementForm, { Evenement } from '../../components/Doctor/EvenementForm';
 
 interface AgendaMedecinProps {
-  medecinId: string; // Toujours string pour Next.js
+  medecinId: string;
 }
 
 export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
@@ -19,14 +19,20 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
   const [selectedRange, setSelectedRange] = useState<{ start: string; end: string } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null);
 
+  // Ajouter un événement
   const ajouterEvenement = (e: Evenement) => setEvents((prev) => [...prev, e]);
-  const supprimerEvenement = (id?: string) => setEvents((prev) => prev.filter((ev) => ev.id !== id));
 
+  // Supprimer un événement par id
+  const supprimerEvenement = (id?: string) =>
+    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+
+  // Sélection d'une plage horaire
   const handleSelect = (info: any) => {
     setSelectedRange({ start: info.startStr, end: info.endStr });
     setSelectedEvent(null);
   };
 
+  // Clic sur un événement
   const handleEventClick = (info: any) => {
     setSelectedEvent({
       id: info.event.id,
@@ -38,9 +44,10 @@ export default function AgendaMedecin({ medecinId }: AgendaMedecinProps) {
     setSelectedRange(null);
   };
 
-  const toISOString = (value?: string | Date): string =>
-    !value ? '' : typeof value === 'string' ? new Date(value).toISOString() : value.toISOString();
+  // Convertit string|undefined en ISO string
+  const toISOString = (value?: string): string => (!value ? '' : new Date(value).toISOString());
 
+  // Scroll automatique vers le formulaire si hash #evenement
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#evenement') {
       const el = document.getElementById('evenement');
