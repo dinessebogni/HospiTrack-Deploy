@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
@@ -11,6 +12,11 @@ import Todo from "./Todo";
 import LoadingSpinner from "../LoadingSpinner";
 import { FaUser, FaUserMd, FaCalendarCheck, FaHourglassHalf } from "react-icons/fa";
 
+interface DashboardAdminProps {
+  hopitalId: string;
+  token: string;
+}
+
 interface Stats {
   totalPatients: number;
   totalDoctors: number;
@@ -19,7 +25,7 @@ interface Stats {
   appointments: any[];
 }
 
-export default function DashboardAdmin() {
+export default function DashboardAdmin({ hopitalId, token }: DashboardAdminProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState<Stats>({
     totalPatients: 0,
@@ -31,18 +37,7 @@ export default function DashboardAdmin() {
 
   const [pendingMedecins, setPendingMedecins] = useState<Medecin[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hopitalId, setHopitalId] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
 
-  // Accéder à localStorage côté client
-  useEffect(() => {
-    const storedHopitalId = localStorage.getItem("hopitalId");
-    const storedToken = localStorage.getItem("token");
-    setHopitalId(storedHopitalId);
-    setToken(storedToken);
-  }, []);
-
-  // Fetch stats et médecins en attente une fois hopitalId & token définis
   useEffect(() => {
     if (!hopitalId || !token) return;
 

@@ -2,13 +2,10 @@
 import DashboardAdmin from "../../components/Admin/DashboardAdmin";
 
 export default function Dashboard() {
-  const userId = typeof window !== "undefined" ? localStorage.getItem("userId") || "" : "";
+  const hopitalId = typeof window !== "undefined" ? localStorage.getItem("hopitalId") || "" : "";
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
 
-  return (
-    <div className="flex min-h-screen ">
-      <div className="flex-1">
-        <DashboardAdmin userId={userId} />
-      </div>
-    </div>
-  ); 
+  if (!hopitalId || !token) return <p>Chargement...</p>;
+
+  return <DashboardAdmin hopitalId={hopitalId} token={token} />;
 }
